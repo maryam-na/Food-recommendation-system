@@ -1,5 +1,6 @@
 package com.example.food_web_app.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -9,6 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -34,11 +36,17 @@ public class FileSystemStorageService {
     this.rootLocation = Paths.get(properties.getLocation());
   }
 
-  public String store(MultipartFile file, String prefix) {
+  public String store(MultipartFile file, String prefix, String folderName) {
+
     String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
     String filename =
         StringUtils.cleanPath(
-            prefix + RandomStringUtils.random(10, true, true) + "." + fileExtension);
+            folderName
+                + "\\"
+                + prefix
+                + RandomStringUtils.random(10, true, true)
+                + "."
+                + fileExtension);
     try {
       if (file.isEmpty()) {
         throw new StorageException("Failed to store empty file " + filename);
@@ -58,10 +66,16 @@ public class FileSystemStorageService {
     }
   }
 
-  public ArrayList<String> storeMultiple(MultipartFile[] files, String prefix) {
+  public ArrayList<String> storeMultiple(MultipartFile[] files, String prefix, String folderName) {
     ArrayList<String> fileNames = new ArrayList<>();
-    Arrays.asList(files).forEach(file -> fileNames.add(store(file, prefix)));
+    Arrays.asList(files).forEach(file -> fileNames.add(store(file, prefix, folderName)));
     return fileNames;
+  }
+
+  public String createFolder() {
+    String folderName = UUID.randomUUID().toString();
+    var newFolder = new File(rootLocation + "\\" + folderName).mkdirs();
+    return folderName;
   }
 
   public Stream<Path> loadAll() {

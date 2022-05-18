@@ -8,4 +8,4 @@ spring:
       mode: always
 
 storage:
-  location: uploads/
+  location: prediction_model/data/uploads/

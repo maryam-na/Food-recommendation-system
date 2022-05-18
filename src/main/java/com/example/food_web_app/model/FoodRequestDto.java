@@ -15,6 +15,8 @@ public class FoodRequestDto {
 
     private MultipartFile[] photos;
 
+    private String folderName;
+
     private List<String> fileNames;
 
     private boolean vegetarian;

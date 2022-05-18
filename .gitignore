@@ -33,4 +33,7 @@ build/
 .vscode/
 
 uploads/**
+prediction_model/data/vegtable_data/**
+prediction_model/venv/**
+prediction_model/data/uploads/**
 docker/database-data/**

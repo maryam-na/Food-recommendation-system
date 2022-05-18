@@ -46,8 +46,11 @@ public class FoodController {
   public String postFoodDetails(
       FoodRequestDto foodRequestDto, BindingResult bindingResult, Model model) {
 
+    String folderName = fileSystemStorageService.createFolder();
+
     ArrayList<String> fileNames =
-        fileSystemStorageService.storeMultiple(foodRequestDto.getPhotos(), "upload_");
+        fileSystemStorageService.storeMultiple(foodRequestDto.getPhotos(), "upload_", folderName);
+    foodRequestDto.setFolderName(folderName);
     foodRequestDto.setFileNames(fileNames);
     foodRequestDto.setPhotos(null);
 
