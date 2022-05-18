@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layout}"
+      lang="en">
+<head>
+    <title th:text="'New Food'">create new project</title>
+</head>
+<body>
+
+<section layout:fragment="content" class="col-md-6 offset-md-3">
+
+    <!--/*@thymesVar id="foodRequestDto" type="com.example.food_web_app.model.FoodRequestDto"*/-->
+
+    <form action="#" th:action="'/food/new'" th:object="${foodRequestDto}" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="photos" class="control-label" th:text="'Select vegtable and fruit photos (Multiple files selection allowed)'">Photos</label>
+            <input type="file" multiple="multiple" th:field="*{photos}" class="form-control" th:class=" ${#fields.hasErrors('photos')} ? 'form-control is-invalid' : 'form-control'" id="photos" name="photos[]" >
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('photos')}" th:errors="*{photos}"> Error</div>
+        </div>
+
+        <div class="mb-3">
+            <input class="form-check-input" type="checkbox" th:field="*{vegetarian}" th:onclick="'toggle();'" id="vegetarian">
+            <label class="form-check-label" for="vegetarian">
+                Should the food be vegetarian?
+            </label>
+        </div>
+
+        <div class="mb-3 meatSelection">
+            <span th:each="meatType: ${allMeatTypes}" class="checkbox-span">
+                <input type="checkbox" th:field="*{meatTypes}" th:value="${meatType}" class="form-check-input" />
+                <label th:for="${#ids.prev('meatTypes')}" th:text="${meatType}" class="form-check-label"></label>
+            </span>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-lg btn-primary btn-block" th:text="'Submit'">Submit</button>
+        </div>
+    </form>
+
+</section>
+</body>
+<script th:inline="javascript">
+</script>
+</html>

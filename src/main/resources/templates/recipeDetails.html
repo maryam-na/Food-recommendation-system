@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layout}"
+      lang="en">
+<head>
+    <title th:text="'Recipe List'">create new project</title>
+</head>
+<body>
+
+<section layout:fragment="content" class="col-md-6 offset-md-3">
+    <h3 th:text="${recipe.title}"></h3>
+    <img th:src="@{/img/food.jpg}"/>
+    <h3>Ingredients</h3>
+
+    <table class="table table-striped">
+        <thead class="thead-dark">
+        <tr>
+            <th>No.</th>
+            <th>Ingredient</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${recipe.ingredients.isEmpty()}">
+            <td colspan="2">No Recipes Available</td>
+        </tr>
+        <tr th:each="ingredient,iterator : ${recipe.ingredients}">
+            <td><span th:text="${iterator.index + 1}"> Title </span></td>
+            <td><span th:text="${ingredient}"> Image </span></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3>Instructions</h3>
+    <div th:text="${recipe.instructions}"></div>
+
+</section>
+</body>
+<script th:inline="javascript">
+</script>
+</html>

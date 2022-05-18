@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:8432/recipe_db"
+    username: user
+    password: password
+  sql:
+    init:
+      mode: always
+
+storage:
+  location: uploads/
