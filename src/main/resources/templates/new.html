@@ -11,6 +11,10 @@
 
 <section layout:fragment="content" class="col-md-6 offset-md-3">
 
+    <div>
+        <img th:src="@{/img/jujeh.jpg}" src="">
+    </div>
+
     <!--/*@thymesVar id="foodRequestDto" type="com.example.food_web_app.model.FoodRequestDto"*/-->
 
     <form action="#" th:action="'/food/new'" th:object="${foodRequestDto}" method="post" enctype="multipart/form-data">

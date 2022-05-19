@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import scipy
+import psycopg2
 from tensorflow import keras
 from flask import Flask, jsonify, request
 
@@ -107,47 +108,74 @@ def picture_detection(imagepath):
     return prediction
 
 
-# x = picture_detection('./data/test/test3')
-# print(x)
-print(1)
-
-red_meat = ['beef', 'pork', ' goat', 'lamb', 'rabbit']
+red_meat = ['beef', 'pork', 'goat', 'lamb', 'rabbit']
 polutry = ['chicken', 'turkey']
 sea_food = ['fish', 'crab', 'lobster', 'prawn', 'clam', 'oyster', 'scallop',
             'mussel']
 
 
-def next_input(h):
-    inpt = input('your desired food must be vegeterian? ')
-    inpt = inpt.lower()
-    if (inpt == 'yes'):
-        res = h
-    else:
-        inpt_meat = input('what kind of meat your food should include? ')
-        if (inpt_meat == 'red meat'):
-            res = h.extend(red_meat)
-        elif (inpt_meat == 'sea food'):
-            res = h.extend(sea_food)
-        elif (inpt_meat == 'polutry'):
-            res = h.extend(polutry)
-        elif (
-            inpt_meat == 'red meat' and inpt_meat == 'polutry' and inpt_meat == 'sea food'):
-            res = h.extend(red_meat, polutry, sea_food)
+def run_db_query(predictedPhotos, requestData):
+    try:
+        connection = psycopg2.connect(user="user",
+                                      password="password",
+                                      host="localhost",
+                                      port="8432",
+                                      database="recipe_db")
+        cursor = connection.cursor()
+
+        main_query = "select t.id, ingredients from ("
+        sub_query_1 = "select recipe.id, string_agg(ingredient.name, ' ') ingredients from recipe join ingredient on recipe.id = ingredient.recipe_id where recipe.id in ("
+        sub_query_2 = "select recipe_id from recipe join ingredient on recipe.id = ingredient.recipe_id where ingredient.name similar to '%"
+        for photo in predictedPhotos:
+            sub_query_2 += photo + "%|"
+
+        sub_query_1 += sub_query_2 + "') group by recipe.id) t "
+
+        main_query += sub_query_1
+
+        if not requestData['vegetarian']:
+            meat_query = "where t.ingredients similar to '%"
+            if len(requestData['meatTypes']) > 0:
+                if 'Red meat' in requestData['meatTypes']:
+                    for item in red_meat:
+                        meat_query += item + "%|"
+                if 'Poultry' in requestData['meatTypes']:
+                    for item in polutry:
+                        meat_query += item + "%|"
+                if 'Sea food' in requestData['meatTypes']:
+                    for item in sea_food:
+                        meat_query += item + "%|"
+            main_query += meat_query + "'"
         else:
-            res = h
-    return res
+            meat_query = "where t.ingredients "
+            for item in red_meat:
+                meat_query += "not like '%" + item + "%' and t.ingredients "
 
+            for item in polutry:
+                meat_query += "not like '%" + item + "%' and t.ingredients "
 
-recipes = [
-    {'id': 123, 'title': 'random food 1', 'picture_link': 'fghjhjgdhgdgdgdgd'},
-    {'id': 243, 'title': 'random food 2', 'picture_link': 'fghjhjgshgdgdgdgd'},
-    {'id': 567, 'title': 'random food 3', 'picture_link': 'fghjhjghgadgdgdgd'},
-]
+            for item in sea_food:
+                meat_query += "not like '%" + item + "%' and t.ingredients "
 
+            meat_query = meat_query[:-18]
+            main_query += meat_query
 
-@app.route('/getRecipes')
-def get_incomes():
-    return jsonify(recipes)
+        main_query += " limit 10"
+
+        cursor.execute(main_query)
+        result = cursor.fetchall()
+        return result
+
+    except psycopg2.OperationalError as e:
+        print("error happened!")
+        print("Error while fetching data from PostgreSQL", e)
+
+    finally:
+        if connection:
+            cursor.close()
+            connection.commit()
+            connection.close()
+            print("PostgreSQL connection is closed")
 
 
 @app.route('/getRecipes', methods=['POST'])
@@ -155,7 +183,16 @@ def add_income():
     data = request.get_json()
     folderPath = "./data/uploads/" + data['folderName']
     prediction = picture_detection(folderPath)
-    return jsonify(recipes)
+    db_result = run_db_query(prediction, data)
+    ids = []
+    for item in db_result:
+        ids.append(item[0])
+
+    idSet = set(ids)
+
+    ids = list(idSet)
+
+    return jsonify(ids)
 
 
 app.run()

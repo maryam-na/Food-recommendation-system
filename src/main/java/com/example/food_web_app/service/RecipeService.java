@@ -1,6 +1,7 @@
 package com.example.food_web_app.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -42,10 +43,11 @@ public class RecipeService {
 
     HttpEntity<FoodRequestDto> httpEntity = new HttpEntity<>(foodRequestDto, headers);
 
-    ResponseEntity<RecipeDto[]> response =
-        restTemplate.exchange(uri, HttpMethod.POST, httpEntity, RecipeDto[].class);
+    ResponseEntity<Integer[]> response =
+        restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Integer[].class);
 
-    return Arrays.asList(Objects.requireNonNull(response.getBody()));
-
+    return recipeRepository.findAllById(List.of(Objects.requireNonNull(response.getBody()))).stream()
+        .map(RecipeDto::fromEntity)
+        .collect(Collectors.toList());
   }
 }
